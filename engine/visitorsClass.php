@@ -8,7 +8,7 @@ Class VisitorsCount{
 
     function __construct($count = 15){
         // $count => how many minutes for timed visitors by default "Visitors past 15 minutes";
-        $this->set_session();
+        $this->set_session($count);
         $this->totalVisitors = $this->totalVisitors();
         $this->uniqueVisitors = $this->uniqueVisitors();
         $this->visitorsTimed = $this->latestVisitors();
@@ -24,10 +24,10 @@ Class VisitorsCount{
         }
         return $con;
     }
-    private function set_session(){
+    private function set_session($minutesToCount){
         $ip = $this->get_client_ip();
         $ip = md5($ip);
-        $this->save_session($ip);
+        $this->save_session($ip, $minutesToCount);
     }
     private function get_client_ip() {
         $ipaddress = '';
@@ -47,10 +47,10 @@ Class VisitorsCount{
             $ipaddress = 'UNKNOWN';
         return $ipaddress;
     }
-    private function save_session($session){
+    private function save_session($session, $minutesCounter){
         $con = $this->connect();
         $sql  ='INSERT INTO `visitors` VALUES (?, ?, 0)';
-        $date = time() + 900;
+        $date = time() + ($minutesCounter * 60);
         if ($this->get_session($session) < time()) {
             if ($stmt = $con->prepare($sql)) {
                 $stmt->bind_param('si', $session, $date);
